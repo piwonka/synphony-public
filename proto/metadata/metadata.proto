@@ -1,0 +1,23 @@
+syntax = "proto3";
+package metadata;
+option go_package = "metadata/metadata";
+message Metadata {
+  string seed =1;
+  string scene_seed = 2;
+  int64 creation_timestamp = 3;
+  string filetype = 4;
+  string filehandle = 5;
+  string scan_seed = 6;
+  string scan_filehandle = 7;
+  string scan_filetype = 8;
+  int64 scan_creation_timestamp = 9;
+  bool passed_qc = 10;
+  repeated QCDecision qc = 11;
+}
+
+message QCDecision{
+  string type = 1;
+  bool decision = 2;
+  int64 creation_timestamp = 3;
+  string data = 4;
+}

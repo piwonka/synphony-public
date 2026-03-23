@@ -1,0 +1,30 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: seeds
+  namespace: synphony
+  labels:
+    app: seeds
+spec:
+  ttlSecondsAfterFinished: 300 #cleanup job after finish
+  backoffLimit: 0
+  template:
+    metadata:
+      labels:
+        app: seeds
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: seeds
+          image: synphony-seeds:test
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: synphony-env
+          volumeMounts:
+            - mountPath: /seed
+              name: seeddata
+      volumes:
+        - name: seeddata
+          persistentVolumeClaim:
+            claimName: seeds-claim0

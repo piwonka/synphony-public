@@ -1,0 +1,54 @@
+# GO Builder Base Image
+ARG GO_VERSION=1.25.1
+ARG PROTOC_VERSION=32.1
+ARG PROTOC_GEN_GO_VERSION=v1.36.11
+ARG PROTOC_GEN_GO_GRPC_VERSION=v1.6.1
+ARG UBUNTU_SNAPSHOT=20240501T120000Z
+
+FROM golang:${GO_VERSION}-bookworm as builder
+ARG PROTOC_GEN_GO_VERSION
+ARG PROTOC_VERSION
+ARG GO_VERSION
+ARG PROTOC_GEN_GO_GRPC_VERSION
+ARG UBUNTU_SNAPSHOT
+# ENVS
+ENV CGO_ENABLED=0 \
+	GOOS=linux \
+	GOARCH=amd64 \
+	PROTOC_VERSION=${PROTOC_VERSION} \
+	PATH="/usr/local/bin:${PATH}"
+
+
+# Set up Workspace
+RUN mkdir /workspace
+WORKDIR /workspace
+
+# Install Dependencies, these are only relevant for the retrieval of external packages with fixed versions, therefore these applications are not version fixed, because their internal behavior can not change anything about the result
+RUN apt-get update && \
+	apt-get install -y --no-install-recommends \
+	unzip \
+	wget && \
+	rm -r /var/lib/apt/lists/*
+
+#Download and Install Protoc
+RUN echo "Downloading: https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/protoc-${PROTOC_VERSION}-linux-x86_64.zip"
+# download protoc binary using explicit shell env expansion
+RUN sh -c 'wget -q "https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/protoc-'${PROTOC_VERSION}'-linux-x86_64.zip" -O /usr/local/protoc.zip'
+
+RUN unzip -q /usr/local/protoc.zip -d /usr/local # unzip protoc binary to a directory that is part of $PATH
+
+# Install protoc-go-gen
+RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@${PROTOC_GEN_GO_VERSION} \
+	&& go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@${PROTOC_GEN_GO_GRPC_VERSION}
+
+# Copy libraries and go mod files for layer caching
+# Do it IN THIS ORDER otherwise go mod download might not see changes to the libs and use a cached versioN
+COPY ./scripts/lib/ ./scripts/lib/
+COPY go.mod go.sum ./
+RUN go mod download && go mod verify
+
+# Set up Protobuf and Build it
+COPY proto/ ./proto/
+RUN chmod +x ./proto/build_protobuf.sh
+#RUN ./proto/build_protobuf.sh
+

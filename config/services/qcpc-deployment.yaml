@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qcpc
+  namespace: synphony
+  labels:
+    app: qcpc
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: qcpc
+  template:
+    metadata:
+      labels:
+        app: qcpc
+    spec:
+      containers:
+        - name: qcpc
+          image: synphony-qcpc:test
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: synphony-env

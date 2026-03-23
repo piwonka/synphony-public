@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scenes
+  namespace: synphony
+  labels:
+    app: scenes
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: scenes
+  template:
+    metadata:
+      labels:
+        app: scenes
+    spec:
+      containers:
+        - name: scenes
+          image: synphony-scenes:test
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: synphony-env

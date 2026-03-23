@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lidar
+  namespace: synphony
+  labels:
+    app: lidar
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: lidar
+  template:
+    metadata:
+      labels:
+        app: lidar
+    spec:
+      containers:
+        - name: lidar
+          image: synphony-lidar:test
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: synphony-env

@@ -1,0 +1,63 @@
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaNodePool
+metadata:
+  name: kraft-pool
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: syn-kafka
+spec:
+  replicas: 4
+  roles:
+    - controller
+    - broker
+  storage:
+    type: jbod
+    volumes:
+      - id: 0
+        type: persistent-claim
+        size: 10Gi
+        deleteClaim: true
+        kraftMetadata: shared
+---
+apiVersion: kafka.strimzi.io/v1
+kind: Kafka
+metadata:
+  name: syn-kafka
+  namespace: kafka
+  annotations:
+    strimzi.io/node-pools: "enabled"
+    strimzi.io/kraft: "enabled"
+spec:
+  kafka:
+    version: 4.0.0
+    listeners:
+      - name: plain
+        port: 9092
+        type: internal
+        tls: false
+      - name: external
+        port: 9094
+        type: nodeport
+        tls: false
+        configuration:
+          bootstrap:
+            nodePort: 32092
+          brokers:
+            - broker: 0
+              nodePort: 32093
+            - broker: 1
+              nodePort: 32094
+            - broker: 2
+              nodePort: 32095
+            - broker: 3
+              nodePort: 32096
+    config:
+      default.replication.factor: 3
+      min.insync.replicas: 2
+      offsets.topic..replicatio.factor: 3
+      transaction.state.log.replication.factor: 3
+      transaction.state.log.min.isr: 2
+      num.partitions: 6
+  entityOperator:
+    topicOperator: {}
+    userOperator: {}

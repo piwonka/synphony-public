@@ -1,0 +1,26 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: delete-topics #or generateName: create-topics- with kubectl create
+  namespace: kafka
+spec:
+  ttlSecondsAfterFinished: 120 #cleanup job after finish
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: topics
+          image: apache/kafka:3.7.0
+          command: ["/bin/bash", "-lc"]
+          env:
+            - name: BOOTSTRAP
+              value: "syn-kafka-kafka-bootstrap.kafka:9092"
+          args:
+            - |
+              set -euo pipefail
+              topics=(seeds scenes scans scenes-pass scenes-fail scans-pass scans-fail)
+              for t in  "${topics[@]}"; do
+                /opt/kafka/bin/kafka-topics.sh --delete --topic "$t" \
+                --bootstrap-server "$BOOTSTRAP"
+              done
+              /opt/kafka/bin/kafka-topics.sh --list --bootstrap-server "$BOOTSTRAP"

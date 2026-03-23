@@ -1,0 +1,8 @@
+syntax = "proto3";
+package seeds;
+option go_package="seeds/seed";
+message Seed {
+  string master_seed = 1;
+  string seed = 2;
+  int64 creation_timestamp = 3;
+}

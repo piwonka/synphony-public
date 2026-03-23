@@ -1,0 +1,9 @@
+quality_gates:
+  - type: POINT_COUNT
+    path: ["stages","filters.info","num_points"]
+    op: ">="
+    threshold_env: QC_POINT_COUNT_LOWER_BOUND
+  - type: POINT_DENSITY
+    path: ["stages","filters.hexbin","density"]
+    op: "<="
+    threshold_env: QC_POINT_DENSITY_UPPER_BOUND

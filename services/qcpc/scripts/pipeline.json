@@ -1,0 +1,15 @@
+{
+	"pipeline": [
+		{ 
+			"type":"readers.ply",
+			"filename":"DUMMY.ply"
+		},
+		{
+			"type":"filters.info"
+		},
+		{
+			"type":"filters.hexbin",
+			"edge_size":1.0
+		}
+	]
+}

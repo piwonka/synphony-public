@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qcsc
+  namespace: synphony
+  labels:
+    app: qcsc
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: qcsc
+  template:
+    metadata:
+      labels:
+        app: qcsc
+    spec:
+      containers:
+        - name: qcsc
+          image: synphony-qcsc:test
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: synphony-env
